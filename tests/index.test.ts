@@ -119,6 +119,14 @@ describe("parsePackageAuthor", () => {
     expect(result.ok).toBe(true);
     expect(result.author.name).toBe("Ada Lovelace");
   });
+
+  it("handles runtime-invalid options without throwing", () => {
+    const result = parsePackageAuthor("Ada Lovelace", "bad options" as never);
+
+    expect(result.ok).toBe(false);
+    expect(result.author.name).toBe("Ada Lovelace");
+    expect(result.issues).toContainEqual(expect.objectContaining({ code: "invalid-options" }));
+  });
 });
 
 describe("helpers", () => {
@@ -140,5 +148,6 @@ describe("helpers", () => {
         url: "https://example.dev"
       })
     ).toBe("Ada Lovelace <ada@example.dev> (https://example.dev)");
+    expect(stringifyPackageAuthor(null as never)).toBe("");
   });
 });

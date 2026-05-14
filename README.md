@@ -1,6 +1,22 @@
 # package-author-parse-kit
 
+[![License: MPL-2.0](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
+[![CI](https://github.com/Recoveredd/package-author-parse-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Recoveredd/package-author-parse-kit/actions/workflows/ci.yml)
+
 Parse package author, maintainer, and contributor strings into structured fields with diagnostics.
+
+## Demo
+
+Try the browser preview: [packages.wasta-wocket.fr/package-author-parse-kit](https://packages.wasta-wocket.fr/package-author-parse-kit/).
+
+## Package quality
+
+- TypeScript types are generated from the source.
+- ESM-only package with no runtime dependencies.
+- Marked as side-effect free for bundlers.
+- CI runs `npm ci`, `typecheck`, `build`, and `test`.
+- Tested on Node.js 20 and 22 with GitHub Actions.
+- Browser-friendly implementation with no Node-only APIs.
 
 ## Install
 
@@ -31,7 +47,7 @@ result.ok; // false
 result.issues[0]?.code; // "invalid-email"
 ```
 
-Non-string runtime values are rejected with `invalid-input` instead of being coerced into names.
+Non-string runtime values are rejected with `invalid-input` instead of being coerced into names. Runtime-invalid options return an `invalid-options` diagnostic rather than throwing.
 
 ## API
 

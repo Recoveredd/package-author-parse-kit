@@ -1,4 +1,5 @@
 export type AuthorIssueCode =
+  | "invalid-options"
   | "invalid-input"
   | "empty-input"
   | "input-too-long"
@@ -59,16 +60,19 @@ const EMAIL_PATTERN = /^[^\s@<>()[\]]+@[^\s@<>()[\]]+\.[^\s@<>()[\]]+$/u;
 const URL_PATTERN = /^(?:https?:\/\/|mailto:)[^\s()<>]+$/iu;
 
 export function parsePackageAuthor(input: unknown, options: ParseAuthorOptions = {}): ParseAuthorResult {
-  const maxInputLength = normalizeMaxInputLength(options.maxInputLength);
+  const optionIssues: AuthorIssue[] = [];
+  const safeOptions = normalizeOptions(options, optionIssues);
+  const maxInputLength = normalizeMaxInputLength(safeOptions.maxInputLength);
   if (typeof input !== "string") {
     return failure("", {}, [], [
+      ...optionIssues,
       issue("invalid-input", "Input must be a package person string.", 0)
     ]);
   }
 
   const source = input;
   const tokens: AuthorToken[] = [];
-  const issues: AuthorIssue[] = [];
+  const issues: AuthorIssue[] = [...optionIssues];
   const author: PackageAuthor = {};
 
   if (source.length > maxInputLength) {
@@ -91,7 +95,7 @@ export function parsePackageAuthor(input: unknown, options: ParseAuthorOptions =
   if (bare.length > 0) {
     const start = firstNonSpaceIndex(remainingText);
     const end = lastNonSpaceIndex(remainingText) + 1;
-    if (looksLikeUrl(bare) && options.allowBareUrl !== false) {
+    if (looksLikeUrl(bare) && safeOptions.allowBareUrl !== false) {
       setUrl(bare, start, end, author, tokens, issues);
     } else if (looksLikeUrl(bare)) {
       issues.push(issue("bare-url-disabled", "Bare URL parsing is disabled.", start));
@@ -116,7 +120,7 @@ export function parsePackageAuthor(input: unknown, options: ParseAuthorOptions =
     issues.push(issue("invalid-url", "URL must use http, https, or mailto.", token?.start ?? 0));
   }
 
-  if (options.requireKnownField === true && !author.name && !author.email && !author.url) {
+  if (safeOptions.requireKnownField === true && !author.name && !author.email && !author.url) {
     issues.push(issue("unexpected-token", "Input did not contain a name, email, or URL.", 0));
   }
 
@@ -143,6 +147,10 @@ export function isPackageAuthor(input: unknown, options?: ParseAuthorOptions): b
 }
 
 export function stringifyPackageAuthor(author: PackageAuthor): string {
+  if (!author || typeof author !== "object") {
+    return "";
+  }
+
   const parts: string[] = [];
   if (author.name) {
     parts.push(normalizeSpacing(author.name));
@@ -257,10 +265,19 @@ function lastNonSpaceIndex(value: string): number {
   return 0;
 }
 
-function normalizeMaxInputLength(value: number | undefined): number {
+function normalizeMaxInputLength(value: unknown): number {
   if (value === undefined) return DEFAULT_MAX_INPUT_LENGTH;
-  if (!Number.isFinite(value) || value < 0) return DEFAULT_MAX_INPUT_LENGTH;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return DEFAULT_MAX_INPUT_LENGTH;
   return Math.floor(value);
+}
+
+function normalizeOptions(options: unknown, issues: AuthorIssue[]): ParseAuthorOptions {
+  if (options === undefined || (typeof options === "object" && options !== null && !Array.isArray(options))) {
+    return (options ?? {}) as ParseAuthorOptions;
+  }
+
+  issues.push(issue("invalid-options", "Options must be an object; defaults were used.", 0));
+  return {};
 }
 
 function issue(code: AuthorIssueCode, message: string, index: number): AuthorIssue {

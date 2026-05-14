@@ -2,7 +2,7 @@
 
 ## Verdict
 
-GO local draft, recommended for human review before any publication decision.
+Promu en vraie librairie le 2026-05-14, après une passe utilisateur avancé supplémentaire sur les options runtime et l'ajout de l'hygiène dépôt standard.
 
 ## Candidate
 
