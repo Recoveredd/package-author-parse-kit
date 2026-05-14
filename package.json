@@ -6,6 +6,17 @@
   "sideEffects": false,
   "license": "MPL-2.0",
   "author": "Recoveredd",
+  "keywords": [
+    "author",
+    "maintainer",
+    "package-json",
+    "npm",
+    "metadata",
+    "parser",
+    "diagnostics",
+    "typescript",
+    "browser"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Recoveredd/package-author-parse-kit.git"
