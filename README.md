@@ -31,6 +31,8 @@ result.ok; // false
 result.issues[0]?.code; // "invalid-email"
 ```
 
+Non-string runtime values are rejected with `invalid-input` instead of being coerced into names.
+
 ## API
 
 ### `parsePackageAuthor(input, options?)`

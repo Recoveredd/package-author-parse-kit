@@ -1,4 +1,5 @@
 export type AuthorIssueCode =
+  | "invalid-input"
   | "empty-input"
   | "input-too-long"
   | "unclosed-email"
@@ -57,9 +58,15 @@ const EMAIL_PATTERN = /^[^\s@<>()[\]]+@[^\s@<>()[\]]+\.[^\s@<>()[\]]+$/u;
 
 const URL_PATTERN = /^(?:https?:\/\/|mailto:)[^\s()<>]+$/iu;
 
-export function parsePackageAuthor(input: string, options: ParseAuthorOptions = {}): ParseAuthorResult {
-  const maxInputLength = options.maxInputLength ?? DEFAULT_MAX_INPUT_LENGTH;
-  const source = String(input);
+export function parsePackageAuthor(input: unknown, options: ParseAuthorOptions = {}): ParseAuthorResult {
+  const maxInputLength = normalizeMaxInputLength(options.maxInputLength);
+  if (typeof input !== "string") {
+    return failure("", {}, [], [
+      issue("invalid-input", "Input must be a package person string.", 0)
+    ]);
+  }
+
+  const source = input;
   const tokens: AuthorToken[] = [];
   const issues: AuthorIssue[] = [];
   const author: PackageAuthor = {};
@@ -126,12 +133,12 @@ export function parsePackageAuthor(input: string, options: ParseAuthorOptions = 
   };
 }
 
-export function packageAuthorOrUndefined(input: string, options?: ParseAuthorOptions): PackageAuthor | undefined {
+export function packageAuthorOrUndefined(input: unknown, options?: ParseAuthorOptions): PackageAuthor | undefined {
   const result = parsePackageAuthor(input, options);
   return result.ok ? result.author : undefined;
 }
 
-export function isPackageAuthor(input: string, options?: ParseAuthorOptions): boolean {
+export function isPackageAuthor(input: unknown, options?: ParseAuthorOptions): boolean {
   return parsePackageAuthor(input, options).ok;
 }
 
@@ -248,6 +255,12 @@ function lastNonSpaceIndex(value: string): number {
     }
   }
   return 0;
+}
+
+function normalizeMaxInputLength(value: number | undefined): number {
+  if (value === undefined) return DEFAULT_MAX_INPUT_LENGTH;
+  if (!Number.isFinite(value) || value < 0) return DEFAULT_MAX_INPUT_LENGTH;
+  return Math.floor(value);
 }
 
 function issue(code: AuthorIssueCode, message: string, index: number): AuthorIssue {

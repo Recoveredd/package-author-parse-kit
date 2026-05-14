@@ -46,6 +46,20 @@ describe("parsePackageAuthor", () => {
     ]);
   });
 
+  it("returns diagnostics for non-string input", () => {
+    const result = parsePackageAuthor(null);
+
+    expect(result.ok).toBe(false);
+    expect(result.input).toBe("");
+    expect(result.issues).toEqual([
+      {
+        code: "invalid-input",
+        message: "Input must be a package person string.",
+        index: 0
+      }
+    ]);
+  });
+
   it("returns diagnostics for invalid email and URL", () => {
     const result = parsePackageAuthor("Ada <not-an-email> (ftp://example.dev)");
 
@@ -98,11 +112,19 @@ describe("parsePackageAuthor", () => {
     expect(result.ok).toBe(false);
     expect(result.issues[0]?.code).toBe("input-too-long");
   });
+
+  it("ignores invalid max length options instead of rejecting everything", () => {
+    const result = parsePackageAuthor("Ada Lovelace", { maxInputLength: -1 });
+
+    expect(result.ok).toBe(true);
+    expect(result.author.name).toBe("Ada Lovelace");
+  });
 });
 
 describe("helpers", () => {
   it("returns undefined for invalid input", () => {
     expect(packageAuthorOrUndefined("Ada <bad-email>")).toBeUndefined();
+    expect(packageAuthorOrUndefined(null)).toBeUndefined();
   });
 
   it("checks validity", () => {

@@ -90,11 +90,22 @@ The parent workspace Git state was not touched by the draft Git repository.
 - Source spans now stay non-negative when unexpected closing delimiters are present.
 - README option wording was updated for `allowBareUrl`.
 
+## Requalification 2026-05-14
+
+Decision: GO local later, but low urgency. The package is tidy and useful for npm/package metadata tooling, yet it is less differentiated and less visual than the stronger candidates already waiting.
+
+Advanced-user pass 1: browser/package editor form input. Non-string runtime values now return `invalid-input` instead of being coerced into an author name.
+
+Advanced-user pass 2: metadata import with option objects. Invalid negative `maxInputLength` values are ignored instead of rejecting every normal input.
+
+Robustness pass: helper APIs now accept unknown runtime input consistently and return safe failures.
+
 ## Validation Commands
 
 - `npm install`: OK.
-- `npm run typecheck`: OK.
-- `npm test`: OK, 13 tests passed after local review fixes.
+- `npm run typecheck`: OK after requalification.
+- `npm test`: OK, 15 tests passed after local review fixes.
 - `npm run build`: OK.
 - `npm pack --dry-run`: failed with the default user npm cache because `/Users/guillaumepapinutti/.npm` contains root-owned files.
-- `npm_config_cache=/private/tmp/package-author-parse-kit-npm-cache npm pack --dry-run`: OK, tarball preview contains 8 files and unpacked size is 32.5 kB.
+- `npm_config_cache=/private/tmp/package-author-parse-kit-npm-cache npm pack --dry-run`: OK, tarball preview contains 8 files and unpacked size is 33.4 kB.
+- Smoke `dist`: OK, valid author parsed and non-string input rejected with `invalid-input`.
